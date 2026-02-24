@@ -4,102 +4,147 @@ import { generateRandomSignupData } from '../../utils/randomUser';
 
 test.describe('Signup Page Tests', () => {
 
-    // test('should sign up with valid details', async ({ page }) => {
-    //     const signup = new SignupPage(page);
-    //     const data = generateRandomSignupData();
+  // test('should sign up with valid details', async ({ page }) => {
+  //     const signup = new SignupPage(page);
+  //     const data = generateRandomSignupData();
 
-    //     await page.goto('https://gl.vteamslabs.com/signup');
+  //     await page.goto('https://gl.vteamslabs.com/signup');
 
-        
 
-    //     await signup.fillSignupForm(
-    //         data.firstName,
-    //         data.lastName,
-    //         data.organization,
-    //         data.businessType,
-    //         data.email,
-    //         data.password,
-    //         data.confirmPassword
-        
-    //     );
-    //     await signup.acceptTerms();
-    //     await signup.submit();
 
-    //     // Replace with your app’s success selector or URL
-    //     await expect(page).toHaveURL('https://gl.vteamslabs.com/signup');
+  //     await signup.fillSignupForm(
+  //         data.firstName,
+  //         data.lastName,
+  //         data.organization,
+  //         data.businessType,
+  //         data.email,
+  //         data.password,
+  //         data.confirmPassword
 
-    //     console.log("🔐 SIGNUP USER:");
-    //     console.log("Email:", data.email);
-    //     console.log("Password:", data.password);
+  //     );
+  //     await signup.acceptTerms();
+  //     await signup.submit();
 
-    // });
+  //     // Replace with your app’s success selector or URL
+  //     await expect(page).toHaveURL('https://gl.vteamslabs.com/signup');
 
-      test('should not sign up without accepting terms', async ({ page }) => {
-        const signup = new SignupPage(page);
-        const data = generateRandomSignupData();
+  //     console.log("🔐 SIGNUP USER:");
+  //     console.log("Email:", data.email);
+  //     console.log("Password:", data.password);
 
-        await page.goto('https://gl.vteamslabs.com/signup');
+  // });
 
-        await signup.fillSignupForm(
-          data.firstName,
-          data.lastName,
-          data.organization,
-          data.businessType,
-          data.email,
-          data.password,
-          data.confirmPassword
-        );
-        // Not accepting terms
-        await signup.submit();
+  test('should not sign up without accepting terms', async ({ page }) => {
+    const signup = new SignupPage(page);
+    const data = generateRandomSignupData();
 
-        const error = page.locator('text= You must accept the terms and conditions');
-        await expect(error).toBeVisible();
-      });
+    await page.goto('https://gl.vteamslabs.com/signup');
 
-      test('should show error for mismatched passwords', async ({ page }) => {
-        const signup = new SignupPage(page);
-        const data = generateRandomSignupData();
+    await signup.fillSignupForm(
+      data.firstName,
+      data.lastName,
+      data.organization,
+      data.businessType,
+      data.email,
+      data.password,
+      data.confirmPassword
+    );
+    // Not accepting terms
+    await signup.submit();
 
-        await page.goto('https://gl.vteamslabs.com/signup');
+    const error = page.locator('text= You must accept the terms and conditions');
+    await expect(error).toBeVisible();
+  });
 
-        await signup.fillSignupForm(
-          data.firstName,
-          data.lastName,
-          data.organization,
-          data.businessType,
-          data.email,
-          data.password,
-          "wrongPassword123" // mismatched
-        );
-        // await signup.acceptTerms();
-        await signup.submit();
+  test('should show error for mismatched passwords', async ({ page }) => {
+    const signup = new SignupPage(page);
+    const data = generateRandomSignupData();
 
-        const error = page.locator('text=Passwords must match');
-        await expect(error).toBeVisible();
-      });
+    await page.goto('https://gl.vteamslabs.com/signup');
 
-      test('Should show error for missing required fields', async ({ page }) => {
-        const signup = new SignupPage(page);
+    await signup.fillSignupForm(
+      data.firstName,
+      data.lastName,
+      data.organization,
+      data.businessType,
+      data.email,
+      data.password,
+      "wrongPassword123" // mismatched
+    );
+    // await signup.acceptTerms();
+    await signup.submit();
 
-        await page.goto('https://gl.vteamslabs.com/signup');
+    const error = page.locator('text=Passwords must match');
+    await expect(error).toBeVisible();
+  });
 
-        // Do NOT fill anything
-        await signup.submit();
+  test('Should show error for missing required fields', async ({ page }) => {
+    const signup = new SignupPage(page);
 
-        const errorMessages = [
-          'First name is required',
-          'Last name is required',
-          'Organization name is required',
-          'Business type is required',
-          'Email is required',
-          'Password is required',
-          'Confirm password is required',
-          'You must accept the terms and conditions'
-        ];
+    await page.goto('https://gl.vteamslabs.com/signup');
 
-        for (const msg of errorMessages) {
-          await expect(page.getByText(msg, { exact: true })).toBeVisible();
-        }
-      });
+    // Do NOT fill anything
+    await signup.submit();
+
+    const errorMessages = [
+      'First name is required',
+      'Last name is required',
+      'Organization name is required',
+      'Business type is required',
+      'Email is required',
+      'Password is required',
+      'Confirm password is required',
+      'You must accept the terms and conditions'
+    ];
+
+    for (const msg of errorMessages) {
+      await expect(page.getByText(msg, { exact: true })).toBeVisible();
+    }
+  });
 
 });
+
+test('should show error for invalid email format', async ({ page }) => {
+  const signup = new SignupPage(page);
+  const data = generateRandomSignupData();
+
+  await page.goto('https://gl.vteamslabs.com/signup');
+
+  await signup.fillSignupForm(
+    data.firstName,
+    data.lastName,
+    data.organization,
+    data.businessType,
+    "invalidEmail", // invalid email
+    data.password,
+    data.confirmPassword
+  );
+  await signup.acceptTerms();
+  await signup.submit();
+
+  const error = page.locator('text=Wrong email format');
+  await expect(error).toBeVisible();
+});
+
+test('should prevent duplicate email registration', async ({ page }) => {
+  const signup = new SignupPage(page);
+
+  await page.goto('https://gl.vteamslabs.com/signup');
+
+  await signup.fillSignupForm(
+    "John",
+    "Doe",
+    "Existing Org",
+    "Retail",
+    "profile1@yopmail.com", // existing email
+    "University@123",
+    "University@123"
+  );
+  await signup.acceptTerms();
+  await signup.submit();
+
+  const error = page.locator('text=User with this email already exists.');
+  await expect(error).toBeVisible();
+});
+
+
